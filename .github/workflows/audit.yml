@@ -1,0 +1,24 @@
+name: audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: brew style + audit
+        run: |
+          # Usa este checkout como tap, para auditar los cambios del PR y no lo publicado
+          TAPS="$(brew --repository)/Library/Taps/vasallo94"
+          mkdir -p "$TAPS" && ln -sfn "$GITHUB_WORKSPACE" "$TAPS/homebrew-tap"
+          brew trust vasallo94/tap 2>/dev/null || true   # Tap Trust (Homebrew 6+)
+          brew style --cask vasallo94/tap/redlights
+          brew audit --cask --online vasallo94/tap/redlights

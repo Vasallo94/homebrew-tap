@@ -7,7 +7,7 @@ on:
 
 jobs:
   bump:
-    runs-on: ubuntu-latest
+    runs-on: macos-15   # brew audit de casks necesita macOS
     permissions:
       contents: write
     steps:
@@ -25,7 +25,14 @@ jobs:
           SHA=$(curl -fsSL "https://github.com/Vasallo94/redlights/releases/download/$TAG/RedLights-$V.zip.sha256" | cut -d' ' -f1)
           [[ "$SHA" =~ ^[0-9a-f]{64}$ ]] || { echo "SHA-256 no válido: $SHA"; exit 1; }
 
-          sed -i -e "s/^  version \".*\"$/  version \"$V\"/" -e "s/^  sha256 \".*\"$/  sha256 \"$SHA\"/" Casks/redlights.rb
+          sed -i '' -e "s/^  version \".*\"$/  version \"$V\"/" -e "s/^  sha256 \".*\"$/  sha256 \"$SHA\"/" Casks/redlights.rb
+          # Auditar antes de publicar: los push de este workflow no disparan audit.yml
+          TAPS="$(brew --repository)/Library/Taps/vasallo94"
+          mkdir -p "$TAPS" && ln -sfn "$GITHUB_WORKSPACE" "$TAPS/homebrew-tap"
+          brew trust vasallo94/tap 2>/dev/null || true
+          brew style --cask vasallo94/tap/redlights
+          brew audit --cask --online vasallo94/tap/redlights
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -am "redlights $V"
