@@ -1,6 +1,6 @@
 cask "redlights" do
-  version "0.3.0"
-  sha256 "4ed2629e3b042618edfef52665f4bb2285b50ab2ae859af87874a2fd47a49444"
+  version "0.3.1"
+  sha256 "2c8b5bbb8f7683f0944cbe8daee655ed93cb87621f61861cf4851839a14017e3"
 
   url "https://github.com/Vasallo94/redlights/releases/download/v#{version}/RedLights-#{version}.zip"
   name "RedLights"
