@@ -12,14 +12,13 @@ cask "redlights" do
     strategy :github_latest
   end
 
-  depends_on macos: ">= :ventura"
+  depends_on macos: :ventura
 
   app "RedLights.app"
 
   # La app va firmada ad-hoc, sin notarizar: sin esto Gatekeeper la bloquea al abrirla.
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/RedLights.app"]
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{appdir}}/RedLights.app"]
   end
 
   uninstall quit: "es.quique.redlights"

@@ -1,0 +1,32 @@
+name: bump redlights
+
+on:
+  schedule:
+    - cron: '17 6 * * *'   # cada día
+  workflow_dispatch:       # o a mano desde la pestaña Actions
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Actualizar el cask si hay una release nueva
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=$(gh release view --repo Vasallo94/redlights --json tagName -q .tagName)
+          V="${TAG#v}"
+          CUR=$(sed -n 's/^  version "\(.*\)"$/\1/p' Casks/redlights.rb)
+          if [ "$V" = "$CUR" ]; then echo "Al día ($CUR)"; exit 0; fi
+
+          SHA=$(curl -fsSL "https://github.com/Vasallo94/redlights/releases/download/$TAG/RedLights-$V.zip.sha256" | cut -d' ' -f1)
+          [[ "$SHA" =~ ^[0-9a-f]{64}$ ]] || { echo "SHA-256 no válido: $SHA"; exit 1; }
+
+          sed -i -e "s/^  version \".*\"$/  version \"$V\"/" -e "s/^  sha256 \".*\"$/  sha256 \"$SHA\"/" Casks/redlights.rb
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "redlights $V"
+          git push
