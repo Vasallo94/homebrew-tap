@@ -16,6 +16,7 @@ jobs:
       - name: Actualizar el cask si hay una release nueva
         env:
           GH_TOKEN: ${{ github.token }}
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}   # brew audit --online consulta la API de GitHub
         run: |
           TAG=$(gh release view --repo Vasallo94/redlights --json tagName -q .tagName)
           V="${TAG#v}"
